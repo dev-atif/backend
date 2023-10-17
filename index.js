@@ -24,8 +24,16 @@ app.get("/", async (req, res) => {
 
 app.post("/register", async (req, resp) => {
   try {
+    // check email exists or not
+    const existingUser = await User.findOne({ email: req.body.email });
+
+    if (existingUser) {
+      // If the email already exists, send an error response
+      return resp.status(400).json({ error: "Email already exists" });
+    }
+
     let user = new User(req.body);
-    let result = await user.save();
+    
     //Token Schema ------------
     const token = new Token({
       userId: user._id,
@@ -34,7 +42,9 @@ app.post("/register", async (req, resp) => {
     await token.save();
     console.log(token);
     //-------------------------------------
-    const link = `http://localhost:3000/user/${user._id}/verify/${token.token}`;
+    try {
+      
+      const link = `http://localhost:3000/user/${user._id}/verify/${token.token}`;
     await VerifyEmail(req.body.email, link, req.body.name);
     result = result.toObject();
     delete result.pasword;
@@ -42,6 +52,10 @@ app.post("/register", async (req, resp) => {
     Jwt.sign({ result }, Jwtkey, (err, token) => {
       resp.send({ result, auth: token });
     });
+    let result = await user.save();
+    } catch (error) {
+      resp.status(500).json({ error: "Server issue, please try again" });
+    }
   } catch (error) {
     console.error("Error creating user:", error);
     resp.status(500).send("Error creating user");
