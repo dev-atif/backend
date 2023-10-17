@@ -24,9 +24,11 @@ const VerifyEmail = async(email,link,name)=>{
         <a href="${link}">Click here to Verify</a></div>`
     })
     console.log("Message Sent: %s", info.messageId);
-    
-} catch (error) {
+    return true
+}
+ catch (error) {
 console.error("Error sending email:", error);
+return false
 
 } 
 } 

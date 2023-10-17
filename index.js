@@ -20,6 +20,7 @@ app.use(express.static("public"));
 app.get("/", async (req, res) => {
   res.sendFile("index.html", { root: path.join(__dirname, "public") });
 });
+
 //Registration Code ---------------------------------------------------------
 
 app.post("/register", async (req, resp) => {
@@ -30,32 +31,32 @@ app.post("/register", async (req, resp) => {
     if (existingUser) {
       // If the email already exists, send an error response
       return resp.status(400).json({ error: "Email already exists" });
-    }
 
-    let user = new User(req.body);
-    
-    //Token Schema ------------
-    const token = new Token({
-      userId: user._id,
-      token: crypto.randomBytes(16).toString("hex"),
-    });
-    await token.save();
-    console.log(token);
-    //-------------------------------------
-    try {
+    } else {
+      let user = new User(req.body);
       
+      //Token Schema ------------
+      const token = new Token({
+        userId: user._id,
+        token: crypto.randomBytes(16).toString("hex"),
+      });
+      await token.save();
+      console.log(token);
+      //-------------------------------------
       const link = `http://localhost:3000/user/${user._id}/verify/${token.token}`;
-    await VerifyEmail(req.body.email, link, req.body.name);
-    result = result.toObject();
-    delete result.pasword;
-    delete result.confirmpasword;
-    Jwt.sign({ result }, Jwtkey, (err, token) => {
-      resp.send({ result, auth: token });
-    });
-    let result = await user.save();
-    } catch (error) {
-      resp.status(500).json({ error: "Server issue, please try again" });
+    const eamilSent = await VerifyEmail(req.body.email, link, req.body.name);
+    if (eamilSent){
+      let result = await user.save();
+      result = result.toObject();
+      delete result.pasword;
+      delete result.confirmpasword;
+      Jwt.sign({ result }, Jwtkey, (err, token) => {
+        resp.send({ result, auth: token });
+      });
     }
+  else{
+    resp.status(105).send("Email Server Fails Try Again");
+  }}
   } catch (error) {
     console.error("Error creating user:", error);
     resp.status(500).send("Error creating user");
