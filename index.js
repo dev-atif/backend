@@ -17,10 +17,9 @@ const Jwt = require("jsonwebtoken");
 const Jwtkey = "local";
 app.use(bodyParser.json());
 
-
-app.get('/',async(req,res)=>{
-res.send('Upload successfully')
-})
+app.get("/", async (req, res) => {
+  res.send("Upload successfully");
+});
 //Registration Code ---------------------------------------------------------
 
 app.post("/register", async (req, resp) => {
@@ -184,19 +183,19 @@ app.post("/:id/:token", async (req, res) => {
         { new: true }
       );
       if (newPassword) {
-        res.status(200).json({ message: 'Password updated successfully' });
+        res.status(200).json({ message: "Password updated successfully" });
         newPassword.save();
       } else {
-        res.status(500).json({ message: 'Failed to update password' });
+        res.status(500).json({ message: "Failed to update password" });
       }
     } else {
-      res.status(401).json({ message: 'Invalid user or token' });
+      res.status(401).json({ message: "Invalid user or token" });
     }
-    } catch (error) {
-      res.status(500).json({ message: 'Link Is expired' });
-    }
+  } catch (error) {
+    res.status(500).json({ message: "Link Is expired" });
+  }
 });
+const PORT = process.env.PORT || 5000;
+app.listen(PORT);
 
-app.listen(3000);
-
-module.exports=app
+module.exports = app;
