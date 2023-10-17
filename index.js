@@ -52,7 +52,7 @@ app.post("/register", async (req, resp) => {
 /* ------------------------------------------------------------------------------------------------ */
 /* --Login APi ------------------------------------------------------------------------------------- */
 
-app.post("/api/login", async (req, resp) => {
+app.post("/login", async (req, resp) => {
   let user = await User.findOne(req.body).select("-pasword -confirmpasword");
   if (req.body.pasword && req.body.email) {
     if (user) {
