@@ -43,7 +43,7 @@ app.post("/register", async (req, resp) => {
       await token.save();
       console.log(token);
       //-------------------------------------
-      const link = `https://local-tools.vercel.app/user/${user._id}/verify/${token.token}`;
+      const link = ` http://localhost:5173/user/${user._id}/verify/${token.token}`;
     const eamilSent = await VerifyEmail(req.body.email, link, req.body.name);
     if (eamilSent){
       let result = await user.save();
@@ -106,7 +106,7 @@ app.get("/user/:id/verify/:token", async (req, res) => {
 
     // Remove the token after it has been used
     await Token.findByIdAndRemove(token._id);
-    res.redirect("https://local-tools.vercel.app/login");
+    res.redirect(" http://localhost:5173/login");
   } catch (error) {
     res.status(500).send("Error verifying email");
   }
@@ -145,7 +145,7 @@ app.post("/resetlink", async (req, res) => {
       from: "<atifali5410@gmail.com>",
       to: req.body.email,
       subject: "reset link",
-      text: `this link is valid for 2 Minutes https://local-tools.vercel.app/resetpassword/${user.id}?token=${usertoken.reset_pasword_token}`,
+      text: `this link is valid for 2 Minutes  http://localhost:5173/resetpassword/${user.id}?token=${usertoken.reset_pasword_token}`,
     });
     console.log("Message Sent: %s", info.messageId);
     res.status(200).json({ message: "Email sent successfully" });
