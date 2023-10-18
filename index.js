@@ -121,7 +121,8 @@ app.post("/resetlink", async (req, res) => {
     // Handle the case where the user is not found
     return res.status(404).json({ message: "User not found" });
   }
-  //Generate Token using JWT
+  else{
+    //Generate Token using JWT
   const token = Jwt.sign({ _id: user._id }, Jwtkey, { expiresIn: "2m" });
   //Update data store token in field user Schema
   const usertoken = await User.findByIdAndUpdate(
@@ -152,6 +153,7 @@ app.post("/resetlink", async (req, res) => {
     res.status(200).json({ message: "Email sent successfully" });
   } else {
     res.status(500).json({ message: "Error sending email" });
+  }
   }
 });
 
