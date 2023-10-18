@@ -3,8 +3,9 @@ const app = express();
 require("./DataBase/connection");
 const User = require("./DataBase/User");
 const cors = require("cors");
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
+
 const nodemailer = require("nodemailer");
 const sendEmail = require("./Emailverification/Regemail");
 const bodyParser = require("body-parser");
