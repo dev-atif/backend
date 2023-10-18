@@ -106,7 +106,7 @@ app.get("/user/:id/verify/:token", async (req, res) => {
 
     // Remove the token after it has been used
     await Token.findByIdAndRemove(token._id);
-    res.redirect("https://local-tools.vercel.app/Login");
+    res.redirect("https://local-tools.vercel.app/login");
   } catch (error) {
     res.status(500).send("Error verifying email");
   }
