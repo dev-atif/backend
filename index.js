@@ -44,7 +44,7 @@ app.post("/register", async (req, resp) => {
       await token.save();
       console.log(token);
       //-------------------------------------
-      const link = `https://local-tools.vercel.app/user/${user._id}/verify/${token.token}`;
+      const link = `https://backend-two-blush-62.vercel.app/user/${user._id}/verify/${token.token}`;
     const eamilSent = await VerifyEmail(req.body.email, link, req.body.name);
     if (eamilSent){
       let result = await user.save();
