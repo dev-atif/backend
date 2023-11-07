@@ -7,7 +7,7 @@ app.use(cors());
 app.use(express.json());
 
 const nodemailer = require("nodemailer");
-const sendEmail = require("./Emailverification/Regemail");
+
 const bodyParser = require("body-parser");
 const Token = require("./Models/tokenModel");
 const crypto = require("crypto");
@@ -18,6 +18,16 @@ const Jwt = require("jsonwebtoken");
 const Jwtkey = "local";
 app.use(bodyParser.json());
 app.use(express.static("public"));
+
+
+
+
+
+
+
+
+
+
 app.get("/", async (req, res) => {
   res.sendFile("index.html", { root: path.join(__dirname, "public") });
 });
