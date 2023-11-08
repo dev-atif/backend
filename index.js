@@ -275,14 +275,21 @@ app.put("/upload", upload, async (req, res) => {
     }
     /* const result = await cloudinary.uploader.upload(req.file.path,{folder:"Profile_Images"}); */
      // Using direct upload method to Cloudinary with the image data
-     const result = await cloudinary.uploader.upload_stream(
-      async (uploadStream) => {
-        req.file.stream.pipe(uploadStream);
-      },
-      {
-        folder: 'Profile_Images'
-      }
-    );
+     const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { folder: 'Profile_Images' },
+        (error, result) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+
+      // Pipe the file buffer to Cloudinary
+      req.file.stream.pipe(uploadStream);
+    });
     if (find.cloudinary_id) {
       const publicId = find.cloudinary_id;
       await cloudinary.uploader.destroy(publicId);
