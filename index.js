@@ -4,7 +4,7 @@ require("./DataBase/connection");
 const User = require("./DataBase/User");
 const cors = require("cors");
 app.use(cors());
-app.use(express.json());
+app.use(express.json({limit:'50mb'}));
 const nodemailer = require("nodemailer");
 const bodyParser = require("body-parser");
 const Token = require("./Models/tokenModel");
