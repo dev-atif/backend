@@ -5,14 +5,16 @@ const User = require("./DataBase/User");
 const cors = require("cors");
 app.use(cors());
 app.use(express.json());
-
 const nodemailer = require("nodemailer");
-
 const bodyParser = require("body-parser");
 const Token = require("./Models/tokenModel");
 const crypto = require("crypto");
 const VerifyEmail = require("./DataBase/Email");
+const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
+const cloudinary = require("./PicUploader/cloudinary");
+
 //JASON WEB TOKEN
 const Jwt = require("jsonwebtoken");
 const Jwtkey = "local";
@@ -223,6 +225,70 @@ app.post("/:id/:token", async (req, res) => {
     res.status(500).json({ message: "Link Is expired" });
   }
 });
+
+
+//Update User Data -----------------------------------------------------------------------------------------------------
+app.put("/updateProfile", async (req, res) => {
+  const userid = req.headers._id;
+
+  try {
+    const checkId = await User.findOne({ _id: userid });
+    if (checkId) {
+      let result = await User.updateOne({ _id: userid }, { $set: req.body });
+
+      if (result) {
+        res.status(200).send("Update Successfully.");
+      }
+    } else {
+      res.status(404).send("User not found");
+    }
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+//////
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "public/UserProfile"); // Store images in the public/images folder
+  },
+  filename: function (req, file, cb) {
+    cb(
+      null,
+      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
+    );
+  },
+});
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 50 * 1024 * 1024 },
+}).single("file");
+//Upload Profile Pic------------------------------------------------------------------------------------------
+app.put("/upload", upload, async (req, res) => {
+  try {
+    const userId = req.headers._id;
+    const find = await User.findById(userId);
+    if (!find) {
+      return res.status(404).send("No such user");
+    }
+    const result = await cloudinary.uploader.upload(req.file.path,{folder:"Profile_Images"});
+    if (find.cloudinary_id) {
+      const publicId = find.cloudinary_id;
+      await cloudinary.uploader.destroy(publicId);
+    }
+    find.image = result.secure_url;
+    find.cloudinary_id = result.public_id;
+    await find.save();
+    res.json({ secure_url: result.secure_url });
+  } catch (error) {
+    res.status(500).send("Error uploading and sending URL to frontend");
+
+    }
+ 
+});
+
+/////////////////////////////////////
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT);
 
