@@ -4,7 +4,7 @@ require("./DataBase/connection");
 const User = require("./DataBase/User");
 const cors = require("cors");
 app.use(cors());
-app.use(express.json({limit:'50mb'}));
+app.use(express.json());
 const nodemailer = require("nodemailer");
 const bodyParser = require("body-parser");
 const Token = require("./Models/tokenModel");
@@ -248,7 +248,7 @@ app.put("/updateProfile", async (req, res) => {
   }
 });
 //////
-/* const storage = multer.diskStorage({
+const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "public/UserProfile"); // Store images in the public/images folder
   },
@@ -262,9 +262,7 @@ app.put("/updateProfile", async (req, res) => {
 const upload = multer({
   storage: storage,
   limits: { fileSize: 50 * 1024 * 1024 },
-}).single("file"); */
-// Multer setup to handle file uploads in memory
-const upload = multer().single('file');
+}).single("file");
 //Upload Profile Pic------------------------------------------------------------------------------------------
 app.put("/upload", upload, async (req, res) => {
   try {
@@ -274,7 +272,6 @@ app.put("/upload", upload, async (req, res) => {
       return res.status(404).send("No such user");
     }
     const result = await cloudinary.uploader.upload(req.file.path,{folder:"Profile_Images"});
-     
     if (find.cloudinary_id) {
       const publicId = find.cloudinary_id;
       await cloudinary.uploader.destroy(publicId);
@@ -284,7 +281,6 @@ app.put("/upload", upload, async (req, res) => {
     await find.save();
     res.json({ secure_url: result.secure_url });
   } catch (error) {
-    console.error('Error during upload:', error);
     res.status(500).send("Error uploading and sending URL to frontend");
 
     }
