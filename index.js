@@ -282,7 +282,8 @@ app.put("/upload", upload, async (req, res) => {
     await find.save();
     res.json({ secure_url: result.secure_url });
   } catch (error) {
-    res.status(500).send("Error uploading and sending URL to frontend");
+    res.status(500).send("Error uploading and sending URL to frontend",error);
+    
 
     }
  
