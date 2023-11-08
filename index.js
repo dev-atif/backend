@@ -248,7 +248,7 @@ app.put("/updateProfile", async (req, res) => {
   }
 });
 //////
-const storage = multer.diskStorage({
+/* const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "public/UserProfile"); // Store images in the public/images folder
   },
@@ -258,7 +258,8 @@ const storage = multer.diskStorage({
       file.fieldname + "-" + Date.now() + path.extname(file.originalname)
     );
   },
-});
+}); */
+const storage = multer.memoryStorage()
 const upload = multer({
   storage: storage,
   limits: { fileSize: 50 * 1024 * 1024 },
