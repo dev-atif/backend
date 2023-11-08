@@ -273,7 +273,16 @@ app.put("/upload", upload, async (req, res) => {
     if (!find) {
       return res.status(404).send("No such user");
     }
-    const result = await cloudinary.uploader.upload(Buffer.from(req.file.buffer),{folder:"Profile_Images"});
+    /* const result = await cloudinary.uploader.upload(req.file.path,{folder:"Profile_Images"}); */
+     // Using direct upload method to Cloudinary with the image data
+     const result = await cloudinary.uploader.upload_stream(
+      async (uploadStream) => {
+        req.file.stream.pipe(uploadStream);
+      },
+      {
+        folder: 'Profile_Images'
+      }
+    );
     if (find.cloudinary_id) {
       const publicId = find.cloudinary_id;
       await cloudinary.uploader.destroy(publicId);
