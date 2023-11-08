@@ -273,7 +273,7 @@ app.put("/upload", upload, async (req, res) => {
     if (!find) {
       return res.status(404).send("No such user");
     }
-    const result = await cloudinary.uploader.upload(req.file.path,{folder:"Profile_Images"});
+    const result = await cloudinary.uploader.upload(req.file.buffer,{folder:"Profile_Images"});
     if (find.cloudinary_id) {
       const publicId = find.cloudinary_id;
       await cloudinary.uploader.destroy(publicId);
@@ -283,6 +283,7 @@ app.put("/upload", upload, async (req, res) => {
     await find.save();
     res.json({ secure_url: result.secure_url });
   } catch (error) {
+    console.error('Error during upload:', error);
     res.status(500).send("Error uploading and sending URL to frontend");
 
     }
