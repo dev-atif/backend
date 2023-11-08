@@ -4,7 +4,7 @@ require("./DataBase/connection");
 const User = require("./DataBase/User");
 const cors = require("cors");
 app.use(cors());
-app.use(express.json({filter:'50mb'}));
+app.use(express.json({ filter: "50mb" }));
 const nodemailer = require("nodemailer");
 const bodyParser = require("body-parser");
 const Token = require("./Models/tokenModel");
@@ -21,15 +21,6 @@ const Jwtkey = "local";
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
-
-
-
-
-
-
-
-
-
 app.get("/", async (req, res) => {
   res.sendFile("index.html", { root: path.join(__dirname, "public") });
 });
@@ -44,10 +35,9 @@ app.post("/register", async (req, resp) => {
     if (existingUser) {
       // If the email already exists, send an error response
       return resp.status(400).json({ error: "Email already exists" });
-
     } else {
       let user = new User(req.body);
-      
+
       //Token Schema ------------
       const token = new Token({
         userId: user._id,
@@ -57,19 +47,19 @@ app.post("/register", async (req, resp) => {
       console.log(token);
       //-------------------------------------
       const link = `https://backend-two-blush-62.vercel.app/user/${user._id}/verify/${token.token}`;
-    const eamilSent = await VerifyEmail(req.body.email, link, req.body.name);
-    if (eamilSent){
-      let result = await user.save();
-      result = result.toObject();
-      delete result.pasword;
-      delete result.confirmpasword;
-      Jwt.sign({ result }, Jwtkey, (err, token) => {
-        resp.send({ result, auth: token });
-      });
+      const eamilSent = await VerifyEmail(req.body.email, link, req.body.name);
+      if (eamilSent) {
+        let result = await user.save();
+        result = result.toObject();
+        delete result.pasword;
+        delete result.confirmpasword;
+        Jwt.sign({ result }, Jwtkey, (err, token) => {
+          resp.send({ result, auth: token });
+        });
+      } else {
+        resp.status(105).send("Email Server Fails Try Again");
+      }
     }
-  else{
-    resp.status(105).send("Email Server Fails Try Again");
-  }}
   } catch (error) {
     console.error("Error creating user:", error);
     resp.status(500).send("Error creating user");
@@ -132,40 +122,39 @@ app.post("/resetlink", async (req, res) => {
   if (!user) {
     // Handle the case where the user is not found
     return res.status(404).json({ message: "User not found" });
-  }
-  else{
-    //Generate Token using JWT
-  const token = Jwt.sign({ _id: user._id }, Jwtkey, { expiresIn: "2m" });
-  //Update data store token in field user Schema
-  const usertoken = await User.findByIdAndUpdate(
-    { _id: user._id },
-    { reset_pasword_token: token },
-    { new: true }
-  );
-  // generate mail option
-  if (usertoken) {
-    let transport = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      service: "gmail",
-      port: 587,
-      secure: false,
-      auth: {
-        user: "atifali5410@gmail.com",
-        pass: "uvcmbfjoqznxeopb",
-      },
-    });
-
-    let info = await transport.sendMail({
-      from: "<atifali5410@gmail.com>",
-      to: req.body.email,
-      subject: "reset link",
-      text: `this link is valid for 2 Minutes  https://local-tools.vercel.app/resetpassword/${user.id}?token=${usertoken.reset_pasword_token}`,
-    });
-    console.log("Message Sent: %s", info.messageId);
-    res.status(200).json({ message: "Email sent successfully" });
   } else {
-    res.status(500).json({ message: "Error sending email" });
-  }
+    //Generate Token using JWT
+    const token = Jwt.sign({ _id: user._id }, Jwtkey, { expiresIn: "2m" });
+    //Update data store token in field user Schema
+    const usertoken = await User.findByIdAndUpdate(
+      { _id: user._id },
+      { reset_pasword_token: token },
+      { new: true }
+    );
+    // generate mail option
+    if (usertoken) {
+      let transport = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        service: "gmail",
+        port: 587,
+        secure: false,
+        auth: {
+          user: "atifali5410@gmail.com",
+          pass: "uvcmbfjoqznxeopb",
+        },
+      });
+
+      let info = await transport.sendMail({
+        from: "<atifali5410@gmail.com>",
+        to: req.body.email,
+        subject: "reset link",
+        text: `this link is valid for 2 Minutes  https://local-tools.vercel.app/resetpassword/${user.id}?token=${usertoken.reset_pasword_token}`,
+      });
+      console.log("Message Sent: %s", info.messageId);
+      res.status(200).json({ message: "Email sent successfully" });
+    } else {
+      res.status(500).json({ message: "Error sending email" });
+    }
   }
 });
 
@@ -226,7 +215,6 @@ app.post("/:id/:token", async (req, res) => {
   }
 });
 
-
 //Update User Data -----------------------------------------------------------------------------------------------------
 app.put("/updateProfile", async (req, res) => {
   const userid = req.headers._id;
@@ -248,18 +236,9 @@ app.put("/updateProfile", async (req, res) => {
   }
 });
 //////
-/* const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "public/UserProfile"); // Store images in the public/images folder
-  },
-  filename: function (req, file, cb) {
-    cb(
-      null,
-      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-    );
-  },
-}); */
-const storage = multer.memoryStorage()
+/////Multer---------------------------------------------
+
+const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
   limits: { fileSize: 50 * 1024 * 1024 },
@@ -272,7 +251,16 @@ app.put("/upload", upload, async (req, res) => {
     if (!find) {
       return res.status(404).send("No such user");
     }
-    const result = await cloudinary.uploader.upload(req.file.file,{folder:"Profile_Images"});
+    const imageFile = req.file;
+    if (!imageFile) {
+      return res.status(404).send("Image is required.");
+    }
+    const buffer = req.file.buffer;
+    const base64 = Buffer.from(buffer).toString("base64");
+    const dataURL = "data:" + req.file.mimetype + ";base64," + base64;
+    const result = await cloudinary.uploader.upload(dataURL, {
+      folder: "Profile_Images",
+    });
     if (find.cloudinary_id) {
       const publicId = find.cloudinary_id;
       await cloudinary.uploader.destroy(publicId);
@@ -282,11 +270,8 @@ app.put("/upload", upload, async (req, res) => {
     await find.save();
     res.json({ secure_url: result.secure_url });
   } catch (error) {
-    res.status(500).send("Error uploading and sending URL to frontend",error);
-    
-
-    }
- 
+    res.status(500).send("Error uploading and sending URL to frontend", error);
+  }
 });
 
 /////////////////////////////////////
