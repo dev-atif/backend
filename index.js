@@ -272,7 +272,7 @@ app.put("/upload", upload, async (req, res) => {
     if (!find) {
       return res.status(404).send("No such user");
     }
-    const result = await cloudinary.uploader.upload(req.file.path,{folder:"Profile_Images"});
+    const result = await cloudinary.uploader.upload(req.file.file,{folder:"Profile_Images"});
     if (find.cloudinary_id) {
       const publicId = find.cloudinary_id;
       await cloudinary.uploader.destroy(publicId);
