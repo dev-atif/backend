@@ -288,7 +288,7 @@ app.put("/upload", upload, async (req, res) => {
       );
 
       // Pipe the file buffer to Cloudinary
-      req.file.stream.pipe(uploadStream);
+      req.file.buffer.pipe(uploadStream);
     });
     if (find.cloudinary_id) {
       const publicId = find.cloudinary_id;
