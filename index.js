@@ -248,7 +248,7 @@ app.put("/updateProfile", async (req, res) => {
   }
 });
 //////
-const storage = multer.diskStorage({
+/* const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "public/UserProfile"); // Store images in the public/images folder
   },
@@ -262,7 +262,9 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: { fileSize: 50 * 1024 * 1024 },
-}).single("file");
+}).single("file"); */
+// Multer setup to handle file uploads in memory
+const upload = multer().single('file');
 //Upload Profile Pic------------------------------------------------------------------------------------------
 app.put("/upload", upload, async (req, res) => {
   try {
@@ -271,7 +273,7 @@ app.put("/upload", upload, async (req, res) => {
     if (!find) {
       return res.status(404).send("No such user");
     }
-    const result = await cloudinary.uploader.upload(req.file.path,{folder:"Profile_Images"});
+    const result = await cloudinary.uploader.upload(req.file.buffer,{folder:"Profile_Images"});
     if (find.cloudinary_id) {
       const publicId = find.cloudinary_id;
       await cloudinary.uploader.destroy(publicId);
