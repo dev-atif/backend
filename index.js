@@ -4,7 +4,7 @@ require("./DataBase/connection");
 const User = require("./DataBase/User");
 const cors = require("cors");
 app.use(cors());
-app.use(express.json({ filter: "50mb" }));
+app.use(express.json({ limit: "100mb" }));
 const nodemailer = require("nodemailer");
 const bodyParser = require("body-parser");
 const Token = require("./Models/tokenModel");
@@ -14,7 +14,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const cloudinary = require("./PicUploader/cloudinary");
-
+const ProductModel = require("./DataBase/Products");
 //JASON WEB TOKEN
 const Jwt = require("jsonwebtoken");
 const Jwtkey = "local";
@@ -274,7 +274,48 @@ app.put("/upload", upload, async (req, res) => {
   }
 });
 
+//////////////////////////////////////////////////////////////////////////////////////////////
+///Post Products to Database --------------------------------------------------------------------
+
+app.post("/postProducts", async (req, res) => {
+  try {
+    // req.body will contain text fields, and req.files will contain the array of files
+    const { body } = req;
+
+    // Upload each file to Cloudinary
+    const cloudinaryUploadPromises = body.Product_images.images.map((file) => {
+      return cloudinary.uploader.upload(file, { folder: "Product_Images" });
+    });
+
+    // Wait for all uploads to complete
+    const cloudinaryResults = await Promise.all(cloudinaryUploadPromises);
+    /* console.log(
+      "Cloudinary Secure URLs:",
+      cloudinaryResults.map((result) => result.secure_url)
+    ); */
+    // Extract Cloudinary URLs from the results
+    const cloudinaryUrls = cloudinaryResults.map((result) => result.secure_url);
+
+    // Create a new instance of the ProductModel with the provided data
+    let data = new ProductModel({
+      ...body,
+      Product_images: cloudinaryUrls.map((url) => ({ images: url })),
+    });
+
+    // Save the product to the database
+    let result = await data.save();
+
+    // Send a success response with the saved product data
+    res.status(200).json({ message: "Successfully added", result });
+  } catch (error) {
+    // Handle errors
+    console.error("Error:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 /////////////////////////////////////
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT);
