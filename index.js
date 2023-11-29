@@ -315,7 +315,22 @@ app.post("/postProducts", async (req, res) => {
 });
 
 /////////////////////////////////////
+//Fetch All Product Api from database.........................................
+app.get('/products',async(req,res)=>{
+  try {
+  
+    const products = await ProductModel.find()
+    if(products.length>0){
 
+      res.json(products)
+    }
+    else{
+      res.send({result:"There is no Product in database"})
+    }
+  } catch (error) {
+    res.status(500).send(error.message)
+  }
+}) 
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT);
