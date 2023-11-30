@@ -332,6 +332,25 @@ app.get('/products',async(req,res)=>{
   }
 }) 
 
+//Single Product Api -----------------------------------------------------------------------------------
+
+app.get('/singleproduct/:id',async(req,res)=>{
+ 
+  const {id} = req.params
+  try {
+    let result = await ProductModel.findOne({_id:id});
+  if(result){
+    res.send(result)
+  }
+  else{
+    res.send({result:"No record found"})
+  }
+    
+  } catch (error) {
+   res.status(500).send({error:"internal server Error"})
+  }
+})
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT);
 
