@@ -351,6 +351,20 @@ app.get('/singleproduct/:id',async(req,res)=>{
   }
 })
 
+//Category base Api ------------------------------------------
+
+app.get('/category',async(req,res)=>{
+  try {
+    const Category = req.query.cat
+    const item = await ProductModel.find({Category})
+    res.send(item)
+  } catch (error) {
+    res.status(500).send({ result: 'Internal Server Error', error: error.message });
+  
+  }
+})
+
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT);
 
